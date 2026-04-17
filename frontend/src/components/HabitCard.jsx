@@ -4,13 +4,14 @@ import { motion } from 'framer-motion';
 import ToggleSwitch from './ToggleSwitch';
 
 const HabitCard = ({ habit, onComplete }) => {
-  const isCompleted = habit.lastCompleted === new Date().toDateString();
+  // const isCompleted = habit.lastCompleted === new Date().toDateString();
+  const isCompleted = new Date(habit.lastCompleted).toDateString() === new Date().toDateString();
 
   return (
-    <motion.div
-      whileTap={{ scale: 0.97 }}
-      whileHover={{ scale: isCompleted ? 1 : 1.03 }}
-    >
+    // <motion.div
+    //   // whileTap={{ scale: 0.97 }}
+    //   whileHover={{ scale: isCompleted ? 1 : 1.03 }}
+    // >
       <Card
         className={`
           cursor-pointer transition-all duration-300
@@ -44,7 +45,10 @@ const HabitCard = ({ habit, onComplete }) => {
             {/* TOGGLE SWITCH */}
             <ToggleSwitch
               checked={isCompleted}
-              onChange={() => onComplete && onComplete(habit.id)}
+              onChange={(e) => {
+                e.stopPropagation();
+                onComplete && onComplete(habit.id)
+              }}
             />
 
             {/* STREAK */}
@@ -88,7 +92,6 @@ const HabitCard = ({ habit, onComplete }) => {
         </div>
 
       </Card>
-    </motion.div>
   );
 };
 

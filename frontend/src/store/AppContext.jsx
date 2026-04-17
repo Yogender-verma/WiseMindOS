@@ -554,6 +554,45 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const handleCompleteHabit = async (habitId) => {
+      try {
+        const response = await habitAPI.complete(habitId);
+  
+        if (response.success) {
+          const updatedHabit = {
+            ...response.habit,
+            id: response.habit._id
+          };
+  
+          setHabits(habits.map(h =>
+            h.id === habitId ? updatedHabit : h
+          ));
+
+           // ✅ REFETCH DAILY PLAN
+          const dailyPlanRes = await dailyPlanAPI.getToday();
+
+          if (dailyPlanRes.success) {
+            const updatedPlan = {
+              ...dailyPlanRes.dailyPlan,
+              plannedTasks: dailyPlanRes.dailyPlan.plannedTasks.map(pt => ({
+                ...pt,
+                id: pt._id
+              }))
+            };
+
+            setDailyPlan(updatedPlan);
+          }
+
+          showToast({ message: response.message || 'Habit completed successfully', status: 'success' })
+        } else {
+          showToast({ message: response.message || 'Failed to update habit', status: 'error' })
+        }
+      } catch (error) {
+      console.error('Error completing habit:', error);
+      showToast({ message: error.message || 'Failed to complete habit', status: 'error' })
+    }
+    };
+
   // const deleteHabit = (habitId) => {
   // Delete Habit - Backend Integration
   const deleteHabit = async (habitId) => {
@@ -936,6 +975,7 @@ export const AppProvider = ({ children }) => {
     updateProject,
     deleteProject,
     updateHabit,
+    handleCompleteHabit,
     deleteHabit,
     updateScores,
     setDailyTasksList,

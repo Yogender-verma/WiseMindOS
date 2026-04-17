@@ -61,7 +61,7 @@ const getHabits = async (req, res) => {
 // Update Habit
 const updateHabit = async (req, res) => {
     try {
-        const { habitId, name, type, startTime, endTime, mode } = req.body;
+        const { habitId, name, type, startTime, endTime, mode, streak, lastCompleted } = req.body;
         const userId = req.body.userId;
 
         if (!habitId) {
@@ -78,6 +78,8 @@ const updateHabit = async (req, res) => {
         if (startTime !== undefined) habit.startTime = startTime;
         if (endTime !== undefined) habit.endTime = endTime;
         if (mode) habit.mode = mode;
+        if (streak) habit.streak = streak;
+        if (lastCompleted) habit.lastCompleted = lastCompleted;
 
         await habit.save();
         res.json({ success: true, habit, message: 'Habit Updated Successfully' });
@@ -89,6 +91,61 @@ const updateHabit = async (req, res) => {
 };
 
 // Complete Habit (SSOT - Updates Habit with streak logic, then DailyPlan)
+// const completeHabit = async (req, res) => {
+//     try {
+//         const { habitId } = req.body;
+//         const userId = req.body.userId;
+
+//         if (!habitId) {
+//             return res.json({ success: false, message: 'Habit ID is required' });
+//         }
+
+//         // SOURCE OF TRUTH: Update Habit first
+//         const habit = await habitModel.findOne({ _id: habitId, userId });
+//         if (!habit) {
+//             return res.json({ success: false, message: 'Habit not found' });
+//         }
+
+//         // CRITICAL STREAK LOGIC
+//         if (habit.lastCompleted && isToday(habit.lastCompleted)) {
+//             // Already completed today - do nothing
+//             return res.json({ success: true, habit, message: 'Already completed today' });
+//         }
+
+//         if (habit.lastCompleted && isYesterday(habit.lastCompleted)) {
+//             // Completed yesterday - increment streak
+//             habit.streak += 1;
+//         } else {
+//             // Streak broken or first time - reset to 1
+//             habit.streak = 1;
+//         }
+
+//         habit.lastCompleted = new Date();
+//         await habit.save();
+
+//         // SYNC: Update in DailyPlan if exists
+//         const today = new Date().toISOString().split('T')[0];
+//         const dailyPlan = await dailyPlanModel.findOne({ userId, date: today });
+        
+//         if (dailyPlan) {
+//             const plannedHabit = dailyPlan.plannedTasks.find(pt => 
+//                 pt.source === 'habit' && pt.habitId && pt.habitId.toString() === habitId
+//             );
+            
+//             if (plannedHabit) {
+//                 plannedHabit.completed = true;
+//                 await dailyPlan.save();
+//             }
+//         }
+
+//         res.json({ success: true, habit });
+
+//     } catch (error) {
+//         console.log(error);
+//         res.json({ success: false, message: error.message });
+//     }
+// };
+
 const completeHabit = async (req, res) => {
     try {
         const { habitId } = req.body;
@@ -98,45 +155,89 @@ const completeHabit = async (req, res) => {
             return res.json({ success: false, message: 'Habit ID is required' });
         }
 
-        // SOURCE OF TRUTH: Update Habit first
         const habit = await habitModel.findOne({ _id: habitId, userId });
         if (!habit) {
             return res.json({ success: false, message: 'Habit not found' });
         }
 
-        // CRITICAL STREAK LOGIC
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+
+        // =============================
+        // 🔁 TOGGLE OFF (UNDO)
+        // =============================
         if (habit.lastCompleted && isToday(habit.lastCompleted)) {
-            // Already completed today - do nothing
-            return res.json({ success: true, habit, message: 'Already completed today' });
+
+            // Decrease streak safely
+            habit.streak = habit.streak > 0 ? habit.streak - 1 : 0;
+
+            // Set lastCompleted to yesterday or null
+            if (habit.streak === 0) {
+                habit.lastCompleted = null;
+            } else {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                habit.lastCompleted = yesterday;
+            }
+
+            await habit.save();
+
+            // 🔄 Sync DailyPlan
+            const dailyPlan = await dailyPlanModel.findOne({ userId, date: todayStr });
+            if (dailyPlan) {
+                const plannedHabit = dailyPlan.plannedTasks.find(pt =>
+                    pt.source === 'habit' &&
+                    pt.habitId &&
+                    pt.habitId.toString() === habitId
+                );
+
+                if (plannedHabit) {
+                    plannedHabit.completed = false;
+                    await dailyPlan.save();
+                }
+            }
+
+            return res.json({
+                success: true,
+                habit,
+                message: 'Habit unmarked (undo successful)'
+            });
         }
 
+        // =============================
+        // ✅ TOGGLE ON (COMPLETE)
+        // =============================
+
         if (habit.lastCompleted && isYesterday(habit.lastCompleted)) {
-            // Completed yesterday - increment streak
             habit.streak += 1;
         } else {
-            // Streak broken or first time - reset to 1
             habit.streak = 1;
         }
 
-        habit.lastCompleted = new Date();
+        habit.lastCompleted = today;
         await habit.save();
 
-        // SYNC: Update in DailyPlan if exists
-        const today = new Date().toISOString().split('T')[0];
-        const dailyPlan = await dailyPlanModel.findOne({ userId, date: today });
-        
+        // 🔄 Sync DailyPlan
+        const dailyPlan = await dailyPlanModel.findOne({ userId, date: todayStr });
+
         if (dailyPlan) {
-            const plannedHabit = dailyPlan.plannedTasks.find(pt => 
-                pt.source === 'habit' && pt.habitId && pt.habitId.toString() === habitId
+            const plannedHabit = dailyPlan.plannedTasks.find(pt =>
+                pt.source === 'habit' &&
+                pt.habitId &&
+                pt.habitId.toString() === habitId
             );
-            
+
             if (plannedHabit) {
                 plannedHabit.completed = true;
                 await dailyPlan.save();
             }
         }
 
-        res.json({ success: true, habit });
+        return res.json({
+            success: true,
+            habit,
+            message: 'Habit completed successfully'
+        });
 
     } catch (error) {
         console.log(error);

@@ -7,6 +7,7 @@ import GradientButton from '../../../components/GradientButton';
 import InputField from '../../../components/InputField';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
+import Modal from '../../../components/Modal';
 
 const DailyTaskTracker = () => {
   const {
@@ -33,6 +34,14 @@ const DailyTaskTracker = () => {
     isImportant: false
   });
 
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [showTimeModal, setShowTimeModal] = useState(false);
+
+  const [timeForm, setTimeForm] = useState({
+    startTime: '09:00',
+    endTime: '10:00'
+  });
+
   const currentHour = new Date().getHours();
   const productivityScore = calculateProductivityScore();
   const disciplineScore = calculateDisciplineScore();
@@ -41,14 +50,14 @@ const DailyTaskTracker = () => {
 
   // Get tasks not yet in daily plan
   const availableTasks = tasks.filter(
-    task => !task.completed && 
-    !dailyPlan.plannedTasks.some(pt => pt.taskId === task.id)
+    task => !task.completed &&
+      !dailyPlan.plannedTasks.some(pt => pt.taskId === task.id)
   );
 
   // Get habits with time that aren't in daily plan
   const suggestedHabits = habits.filter(
-    habit => habit.startTime && 
-    !dailyPlan.plannedTasks.some(pt => pt.habitId === habit.id)
+    habit => habit.startTime &&
+      !dailyPlan.plannedTasks.some(pt => pt.habitId === habit.id)
   );
 
   // Timeline sections
@@ -71,30 +80,30 @@ const DailyTaskTracker = () => {
   const completedCount = dailyPlan.plannedTasks.filter(t => t.completed).length;
 
   // Add tasks from task list
-  const handleAddTasksToPlan = () => {
-    if (selectedTaskIds.length === 0) {
-      alert('Please select at least one task');
-      return;
-    }
+  // const handleAddTasksToPlan = () => {
+  //   if (selectedTaskIds.length === 0) {
+  //     alert('Please select at least one task');
+  //     return;
+  //   }
 
-    selectedTaskIds.forEach(taskId => {
-      const task = tasks.find(t => t.id === taskId);
-      if (task) {
-        addToDailyPlan({
-          source: 'task',
-          taskId: task.id,
-          title: task.title,
-          startTime: task.deadline ? format(new Date(task.deadline), 'HH:mm') : '09:00',
-          endTime: task.deadline ? format(new Date(new Date(task.deadline).getTime() + 3600000), 'HH:mm') : '10:00',
-          completed: task.completed,
-          isImportant: task.isImportant
-        });
-      }
-    });
+  //   selectedTaskIds.forEach(taskId => {
+  //     const task = tasks.find(t => t.id === taskId);
+  //     if (task) {
+  //       addToDailyPlan({
+  //         source: 'task',
+  //         taskId: task.id,
+  //         title: task.title,
+  //         startTime: task.deadline ? format(new Date(task.deadline), 'HH:mm') : '09:00',
+  //         endTime: task.deadline ? format(new Date(new Date(task.deadline).getTime() + 3600000), 'HH:mm') : '10:00',
+  //         completed: task.completed,
+  //         isImportant: task.isImportant
+  //       });
+  //     }
+  //   });
 
-    setSelectedTaskIds([]);
-    setActiveTab('timeline');
-  };
+  //   setSelectedTaskIds([]);
+  //   setActiveTab('timeline');
+  // };
 
   // Add habit to plan
   const handleAddHabitToPlan = (habit) => {
@@ -134,6 +143,25 @@ const DailyTaskTracker = () => {
         ? prev.filter(id => id !== taskId)
         : [...prev, taskId]
     );
+  };
+
+  const handleAddTaskToPlan = async () => {
+    if (!selectedTask) return;
+
+    await addToDailyPlan({
+      source: 'task',
+      taskId: selectedTask.id,
+      title: selectedTask.title,
+      startTime: timeForm.startTime,
+      endTime: timeForm.endTime,
+      completed: selectedTask.completed,
+      isImportant: selectedTask.isImportant
+    });
+
+    // reset
+    setSelectedTask(null);
+    setShowTimeModal(false);
+    setActiveTab('timeline');
   };
 
   const getSourceBadge = (source) => {
@@ -197,11 +225,10 @@ const DailyTaskTracker = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => toggleDailyPlanTaskCompletion(item.id)}
-                          className={`p-2 rounded-lg transition-all ${
-                            item.completed
+                          className={`p-2 rounded-lg transition-all ${item.completed
                               ? 'bg-green-500/20 text-green-400'
                               : 'bg-gray-700/50 text-gray-400 hover:bg-green-500/20 hover:text-green-400'
-                          }`}
+                            }`}
                           data-testid={`complete-daily-task-${item.id}`}
                         >
                           <CheckCircle2 size={20} />
@@ -283,11 +310,10 @@ const DailyTaskTracker = () => {
           <div className="flex gap-2 mb-6">
             <button
               onClick={() => setActiveTab('timeline')}
-              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
-                activeTab === 'timeline'
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${activeTab === 'timeline'
                   ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
                   : 'bg-white/5 text-gray-400 hover:bg-white/10'
-              }`}
+                }`}
               data-testid="timeline-tab"
             >
               <ListTodo size={20} className="inline mr-2" />
@@ -295,11 +321,10 @@ const DailyTaskTracker = () => {
             </button>
             <button
               onClick={() => setActiveTab('add')}
-              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
-                activeTab === 'add'
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${activeTab === 'add'
                   ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
                   : 'bg-white/5 text-gray-400 hover:bg-white/10'
-              }`}
+                }`}
               data-testid="add-tasks-tab"
             >
               <Plus size={20} className="inline mr-2" />
@@ -388,33 +413,30 @@ const DailyTaskTracker = () => {
               <div className="flex gap-2 mb-6">
                 <button
                   onClick={() => setAddMode('tasks')}
-                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                    addMode === 'tasks'
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${addMode === 'tasks'
                       ? 'bg-indigo-600 text-white'
                       : 'bg-white/5 text-gray-400 hover:bg-white/10'
-                  }`}
+                    }`}
                   data-testid="add-from-tasks-tab"
                 >
                   From Tasks ({availableTasks.length})
                 </button>
                 <button
                   onClick={() => setAddMode('habits')}
-                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                    addMode === 'habits'
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${addMode === 'habits'
                       ? 'bg-indigo-600 text-white'
                       : 'bg-white/5 text-gray-400 hover:bg-white/10'
-                  }`}
+                    }`}
                   data-testid="add-from-habits-tab"
                 >
                   Suggested Habits ({suggestedHabits.length})
                 </button>
                 <button
                   onClick={() => setAddMode('manual')}
-                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                    addMode === 'manual'
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${addMode === 'manual'
                       ? 'bg-indigo-600 text-white'
                       : 'bg-white/5 text-gray-400 hover:bg-white/10'
-                  }`}
+                    }`}
                   data-testid="create-manual-task-tab"
                 >
                   Create Manual
@@ -431,22 +453,25 @@ const DailyTaskTracker = () => {
                         {availableTasks.map(task => (
                           <motion.div
                             key={task.id}
-                            onClick={() => toggleTaskSelection(task.id)}
+                            // onClick={() => toggleTaskSelection(task.id)}
+                            onClick={() => {
+                              setSelectedTask(task);
+                              setShowTimeModal(true);
+                            }}
                             whileTap={{ scale: 0.98 }}
-                            className={`p-3 rounded-lg cursor-pointer transition-all ${
-                              selectedTaskIds.includes(task.id)
+                            className={`p-3 rounded-lg cursor-pointer transition-all ${selectedTaskIds.includes(task.id)
                                 ? 'bg-indigo-600/30 border border-indigo-500'
                                 : 'bg-gray-700/50 hover:bg-gray-700'
-                            }`}
+                              }`}
                             data-testid={`select-task-${task.id}`}
                           >
                             <div className="flex items-center gap-3">
-                              <input
+                              {/* <input
                                 type="checkbox"
                                 checked={selectedTaskIds.includes(task.id)}
                                 onChange={() => {}}
                                 className="w-5 h-5"
-                              />
+                              /> */}
                               <div className="flex-1">
                                 <p className="text-white font-medium">{task.title}</p>
                                 {task.deadline && (
@@ -459,14 +484,14 @@ const DailyTaskTracker = () => {
                           </motion.div>
                         ))}
                       </div>
-                      <GradientButton
+                      {/* <GradientButton
                         onClick={handleAddTasksToPlan}
                         className="w-full"
                         disabled={selectedTaskIds.length === 0}
                         data-testid="add-selected-tasks-btn"
                       >
                         Add {selectedTaskIds.length > 0 ? `(${selectedTaskIds.length})` : ''} Tasks to Plan
-                      </GradientButton>
+                      </GradientButton> */}
                     </>
                   ) : (
                     <div className="text-center py-8">
@@ -570,6 +595,45 @@ const DailyTaskTracker = () => {
           )}
         </div>
       </div>
+      {showTimeModal && selectedTask && (
+        <Modal
+          isOpen={showTimeModal}
+          onClose={() => setShowTimeModal(false)}
+          title={`Set time for ${selectedTask.title}`}
+        >
+          <div className="space-y-4">
+
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
+                label="Start Time"
+                type="time"
+                value={timeForm.startTime}
+                onChange={(e) =>
+                  setTimeForm({ ...timeForm, startTime: e.target.value })
+                }
+                required
+              />
+
+              <InputField
+                label="End Time"
+                type="time"
+                value={timeForm.endTime}
+                onChange={(e) =>
+                  setTimeForm({ ...timeForm, endTime: e.target.value })
+                }
+                required
+              />
+            </div>
+
+            <GradientButton
+              onClick={handleAddTaskToPlan}
+              className="w-full"
+            >
+              Add to Plan
+            </GradientButton>
+          </div>
+        </Modal>
+      )}
     </motion.div>
   );
 };

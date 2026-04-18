@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { goalAPI, projectAPI, taskAPI, habitAPI, dailyPlanAPI } from '../api/apiService';
+import { goalAPI, projectAPI, taskAPI, habitAPI, dailyPlanAPI, statsAPI } from '../api/apiService';
 // import { toast } from 'react-toastify';
 import { showToast } from '../utils/toastHelper';
 
@@ -393,7 +393,7 @@ export const AppProvider = ({ children }) => {
           //       : item
           //   )
           // }));
-        } else{
+        } else {
           showToast({ message: response.message || 'Failed to update task', status: 'error' })
         }
       }
@@ -557,44 +557,44 @@ export const AppProvider = ({ children }) => {
   };
 
   const handleCompleteHabit = async (habitId) => {
-      try {
-        const response = await habitAPI.complete(habitId);
-  
-        if (response.success) {
-          const updatedHabit = {
-            ...response.habit,
-            id: response.habit._id
+    try {
+      const response = await habitAPI.complete(habitId);
+
+      if (response.success) {
+        const updatedHabit = {
+          ...response.habit,
+          id: response.habit._id
+        };
+
+        setHabits(habits.map(h =>
+          h.id === habitId ? updatedHabit : h
+        ));
+
+        // ✅ REFETCH DAILY PLAN
+        const dailyPlanRes = await dailyPlanAPI.getToday();
+
+        if (dailyPlanRes.success) {
+          const updatedPlan = {
+            ...dailyPlanRes.dailyPlan,
+            plannedTasks: dailyPlanRes.dailyPlan.plannedTasks.map(pt => ({
+              ...pt,
+              id: pt._id,
+              completedAt: pt.completedAt || null
+            }))
           };
-  
-          setHabits(habits.map(h =>
-            h.id === habitId ? updatedHabit : h
-          ));
 
-           // ✅ REFETCH DAILY PLAN
-          const dailyPlanRes = await dailyPlanAPI.getToday();
-
-          if (dailyPlanRes.success) {
-            const updatedPlan = {
-              ...dailyPlanRes.dailyPlan,
-              plannedTasks: dailyPlanRes.dailyPlan.plannedTasks.map(pt => ({
-                ...pt,
-                id: pt._id,
-                completedAt: pt.completedAt || null
-              }))
-            };
-
-            setDailyPlan(updatedPlan);
-          }
-
-          showToast({ message: response.message || 'Habit completed successfully', status: 'success' })
-        } else {
-          showToast({ message: response.message || 'Failed to update habit', status: 'error' })
+          setDailyPlan(updatedPlan);
         }
-      } catch (error) {
+
+        showToast({ message: response.message || 'Habit completed successfully', status: 'success' })
+      } else {
+        showToast({ message: response.message || 'Failed to update habit', status: 'error' })
+      }
+    } catch (error) {
       console.error('Error completing habit:', error);
       showToast({ message: error.message || 'Failed to complete habit', status: 'error' })
     }
-    };
+  };
 
   // const deleteHabit = (habitId) => {
   // Delete Habit - Backend Integration
@@ -915,7 +915,7 @@ export const AppProvider = ({ children }) => {
 
   // Clear daily plan
   // const clearDailyPlan = () => {
-    // Clear daily plan - Backend Integration
+  // Clear daily plan - Backend Integration
   const clearDailyPlan = async () => {
     try {
       const response = await dailyPlanAPI.clear();
@@ -944,6 +944,29 @@ export const AppProvider = ({ children }) => {
     setScores({ productivity: 0, discipline: 0 });
     setUser(null);
   };
+
+  // ✅ AUTO SAVE DAILY STATS
+  useEffect(() => {
+    if (!dailyPlan) return;
+
+    const saveStats = async () => {
+      try {
+        const productivity = calculateProductivityScore();
+        const discipline = calculateDisciplineScore();
+
+        await statsAPI.save({
+          productivity,
+          discipline
+        });
+
+      } catch (error) {
+        console.log("Stats save failed:", error);
+      }
+    };
+
+    saveStats();
+
+  }, [dailyPlan]);
 
   const value = {
     token,

@@ -167,3 +167,17 @@ export const pageAPI = {
         return response.data;
     }
 };
+
+
+// ============ STATS APIs ============
+export const statsAPI = {
+    save: async (data) => {
+        const response = await axiosInstance.post('/api/stats/save', data);
+        return response.data;
+    },
+
+    getWeekly: async () => {
+        const response = await axiosInstance.post('/api/stats/weekly', {});
+        return response.data;
+    }
+};

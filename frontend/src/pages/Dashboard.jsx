@@ -14,9 +14,14 @@ import GradientButton from '../components/GradientButton';
 import { motion } from 'framer-motion'
 import { useMemo } from 'react';
 import profile_pic from '../assets/profile_pic.svg'
+import { useState, useEffect } from 'react';
+import { statsAPI } from '../api/apiService';
 
 
 const Dashboard = () => {
+
+  const [weeklyData, setWeeklyData] = useState([]);
+
   const {
     goals,
     user,
@@ -38,7 +43,41 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await statsAPI.getWeekly();
 
+        console.log(res);
+        if (res.success) {
+          const formatted = res.data.map(item => ({
+            name: new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' }),
+            productivity: item.productivity,
+            discipline: item.discipline
+          }));
+
+          setWeeklyData(formatted);
+        }
+
+      } catch (error) {
+        console.log("Failed to fetch stats:", error);
+      }
+    };
+
+    fetchStats();
+    console.log("Weekly Data:", weeklyData);
+    console.log(user);
+  }, []);
+
+  const avgProductivity =
+    weeklyData.length > 0
+      ? Math.round(weeklyData.reduce((sum, d) => sum + d.productivity, 0) / weeklyData.length)
+      : 0;
+
+  const avgDiscipline =
+    weeklyData.length > 0
+      ? Math.round(weeklyData.reduce((sum, d) => sum + d.discipline, 0) / weeklyData.length)
+      : 0;
 
   const productivityScore = useMemo(() => calculateProductivityScore(), [tasks, habits, goals]);
   const disciplineScore = useMemo(() => calculateDisciplineScore(), [tasks, habits]);
@@ -49,15 +88,15 @@ const Dashboard = () => {
   const hasPlannedTasks = todayPlannedTasks.length > 0;
 
   // Weekly mock data for charts
-  const weeklyData = [
-    { name: 'Mon', productivity: productivityScore - 10, discipline: disciplineScore - 5 },
-    { name: 'Tue', productivity: productivityScore - 5, discipline: disciplineScore - 3 },
-    { name: 'Wed', productivity: productivityScore - 8, discipline: disciplineScore },
-    { name: 'Thu', productivity: productivityScore + 2, discipline: disciplineScore + 5 },
-    { name: 'Fri', productivity: productivityScore, discipline: disciplineScore + 2 },
-    { name: 'Sat', productivity: productivityScore + 5, discipline: disciplineScore + 8 },
-    { name: 'Sun', productivity: productivityScore + 3, discipline: disciplineScore + 3 },
-  ];
+  // const weeklyData = [
+  //   { name: 'Mon', productivity: productivityScore - 10, discipline: disciplineScore - 5 },
+  //   { name: 'Tue', productivity: productivityScore - 5, discipline: disciplineScore - 3 },
+  //   { name: 'Wed', productivity: productivityScore - 8, discipline: disciplineScore },
+  //   { name: 'Thu', productivity: productivityScore + 2, discipline: disciplineScore + 5 },
+  //   { name: 'Fri', productivity: productivityScore, discipline: disciplineScore + 2 },
+  //   { name: 'Sat', productivity: productivityScore + 5, discipline: disciplineScore + 8 },
+  //   { name: 'Sun', productivity: productivityScore + 3, discipline: disciplineScore + 3 },
+  // ];
 
   const todayTasks = tasks.filter(task => {
     const today = new Date().toDateString();
@@ -183,7 +222,7 @@ const Dashboard = () => {
             <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               {/* <span className="text-orange-400">⭐</span> */}
               <Star className="text-orange-400 " size={18} />
-               Important Tasks
+              Important Tasks
             </h2>
             <div className="space-y-3">
               {importantTasks.slice(0, 4).map(task => (
@@ -334,14 +373,14 @@ const Dashboard = () => {
           <Card className="bg-white/5 backdrop-blur-lg border border-white/10 hover:scale-[1.02] transition-all duration-300">
             <h3 className="text-lg font-semibold text-white mb-4">Productivity Score</h3>
             <div className="flex justify-center">
-              <DonutChart value={productivityScore} size={140} color="#6366f1" label="This Week" />
+              <DonutChart value={avgProductivity} size={140} color="#6366f1" label="This Week" />
             </div>
           </Card>
 
           <Card className="bg-white/5 backdrop-blur-lg border border-white/10 hover:scale-[1.02] transition-all duration-300">
             <h3 className="text-lg font-semibold text-white mb-4">Discipline Score</h3>
             <div className="flex justify-center">
-              <DonutChart value={disciplineScore} size={140} color="#10b981" label="This Week" />
+              <DonutChart value={avgDiscipline} size={140} color="#10b981" label="This Week" />
             </div>
           </Card>
 

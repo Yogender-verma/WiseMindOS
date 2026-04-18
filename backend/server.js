@@ -10,6 +10,7 @@ import habitRouter from './routes/habitRoute.js';
 import dailyPlanRouter from './routes/dailyPlanRoute.js';
 import notebookRouter from './routes/notebookRoute.js';
 import pageRouter from './routes/pageRoute.js';
+import weeklyStatRouter from './routes/weeklyStatRoute.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -28,6 +29,7 @@ app.use('/api/habits', habitRouter);
 app.use('/api/daily-plan', dailyPlanRouter);
 app.use('/api/notebooks', notebookRouter);
 app.use('/api/pages', pageRouter);
+app.use('/api/stats', weeklyStatRouter);
 
 
 

@@ -542,6 +542,17 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const updateNotebook = async (notebookId, name) => {
+  const res = await notebookAPI.update(notebookId, name);
+  if (res.success) {
+    setNotebooks(prev =>
+      prev.map(n =>
+        n.id === notebookId ? { ...n, name } : n
+      )
+    );
+  }
+};
+
   const deleteNotebook = async (notebookId) => {
     const res = await notebookAPI.delete(notebookId);
     if (res.success) {
@@ -919,6 +930,7 @@ export const AppProvider = ({ children }) => {
     notebooks,
     pages,
     createNotebook,
+    updateNotebook,
     deleteNotebook,
     loadPages,
     createPage,

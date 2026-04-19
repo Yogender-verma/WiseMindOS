@@ -140,6 +140,33 @@ export const getNotebooks = async (req, res) => {
   }
 };
 
+// ➤ Update Notebook Name
+export const updateNotebook = async (req, res) => {
+  try {
+    const { notebookId, name } = req.body;
+    const userId = req.body.userId;
+
+    if (!notebookId || !name) {
+      return res.json({ success: false, message: "NotebookId and name required" });
+    }
+
+    const notebook = await notebookModel.findOneAndUpdate(
+      { _id: notebookId, userId },
+      { name },
+      { new: true }
+    );
+
+    if (!notebook) {
+      return res.json({ success: false, message: "Notebook not found" });
+    }
+
+    res.json({ success: true, notebook });
+
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
 
 // ➤ Delete Notebook (with user check + cascade delete)
 export const deleteNotebook = async (req, res) => {

@@ -134,6 +134,10 @@ export const notebookAPI = {
         const response = await axiosInstance.post('/api/notebooks/list', {});
         return response.data;
     },
+    update: async (notebookId, name) => {
+        const response = await axiosInstance.post('/api/notebooks/update', { notebookId, name });
+        return response.data;
+    },
     delete: async (notebookId) => {
         const response = await axiosInstance.post('/api/notebooks/delete', { notebookId });
         return response.data;

@@ -244,11 +244,13 @@ const Bag = () => {
     loadPages,
     createPage,
     updatePage,
+    updateNotebook,
     deletePage
   } = useApp();
   const [search, setSearch] = useState("");
   const [pageSearch, setPageSearch] = useState("");
   const [editingNotebook, setEditingNotebook] = useState(null);
+  const [tempName, setTempName] = useState("");
 
   const [view, setView] = useState("editor"); // NEW
 
@@ -354,7 +356,7 @@ const Bag = () => {
   //   setBag({ ...bag, notebooks: updated });
   // };
 
-  const addPage = async() => {
+  const addPage = async () => {
     if (!activeNotebook) return;
     await createPage(activeNotebook);
     await loadPages(activeNotebook);
@@ -424,16 +426,20 @@ const Bag = () => {
             >
               {editingNotebook === nb.id ? (
                 <input
-                  value={nb.name}
-                  // onChange={(e) => {
-                  //   const updated = notebooks.map(n =>
-                  //     n.id === nb.id
-                  //       ? { ...n, name: e.target.value }
-                  //       : n
-                  //   );
-                  //   setBag({ ...bag, notebooks: updated });
-                  // }}
-                  // onBlur={() => setEditingNotebook(null)}
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                  onBlur={() => {
+                    if (!tempName.trim()) return;
+                    updateNotebook(nb.id, tempName);
+                    setEditingNotebook(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      if (!tempName.trim()) return;
+                      updateNotebook(nb.id, tempName);
+                      setEditingNotebook(null);
+                    }
+                  }}
                   className="bg-transparent text-white outline-none"
                   autoFocus
                 />
@@ -446,6 +452,7 @@ const Bag = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         setEditingNotebook(nb.id);
+                        setTempName(nb.name);
                       }}
                     />
                     <Trash2

@@ -16,11 +16,14 @@ import { useMemo } from 'react';
 import profile_pic from '../assets/profile_pic.svg'
 import { useState, useEffect } from 'react';
 import { statsAPI } from '../api/apiService';
+import Modal from '../components/Modal';
+import InputField from '../components/InputField';
 
 
 const Dashboard = () => {
 
   const [weeklyData, setWeeklyData] = useState([]);
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
   const {
     goals,
@@ -38,6 +41,8 @@ const Dashboard = () => {
     calculateProductivityScore,
     calculateDisciplineScore
   } = useApp();
+
+  const [newProfile, setNewProfile] = useState({ name: user.name, username: user.username, bio: '' });
 
   const navigate = useNavigate();
 
@@ -92,6 +97,13 @@ const Dashboard = () => {
   const topProjects = projects.slice(0, 4);
   const topHabits = habits.slice(0, 3);
 
+  const handleEditProfile = (e)=>{
+    e.preventDefault();
+    setNewProfile({ name: user.name, username: user.username, bio: '' });
+    setShowEditProfile(false);
+    return;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black pb-20 px-4 pt-6 relative overflow-hidden">
       <motion.div
@@ -116,7 +128,7 @@ const Dashboard = () => {
 
             <div className="rounded w-full mb-6 p-4 flex flex-col items-center">
               <div className='w-full flex items-end justify-end'>
-                <button className='bg-white/10 hover:bg-white/15 cursor-pointer border flex gap-2 border-white/15 hover:border-white/25 hover:translate-y-0.5 px-4 py-2 text-white rounded-2xl default-bold shadow-[0_0_10px_rgba(255,255,255,0.2)] hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all duration-300'> <UserPen size={20}/> <span>Edit</span></button>
+                <button onClick={() => setShowEditProfile(true)} className='bg-white/10 hover:bg-white/15 cursor-pointer border flex gap-2 border-white/15 hover:border-white/25 hover:translate-y-0.5 px-4 py-2 text-white rounded-2xl default-bold shadow-[0_0_10px_rgba(255,255,255,0.2)] hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all duration-300'> <UserPen size={20}/> <span>Edit</span></button>
               </div>
               {/* Image div  */}
               <div className='h-30 w-30 rounded-full relative group border-6 border-black/15 shadow-[0_0_40px_rgba(99,102,241,0.2)] shrink-0'>
@@ -499,6 +511,45 @@ const Dashboard = () => {
           </div>
         </Card>
       </div>
+
+      {/* Edit Profile Modal */}
+      <Modal isOpen={showEditProfile} onClose={() => setShowEditProfile(false)} title="Edit Profile Info">
+        <form onSubmit={handleEditProfile} className="space-y-4">
+          <InputField
+            label="Name (Full Name)"
+            value={newProfile.name}
+            onChange={(e) => setNewProfile({ ...newProfile, name: e.target.value })}
+            placeholder="Enter Full Name"
+            required
+            data-testid="profile-name-input"
+          />
+          <InputField
+            label="Username"
+            value={newProfile.username}
+            onChange={(e) => setNewProfile({ ...newProfile, username: e.target.value })}
+            placeholder="Username"
+            required
+            data-testid="profile-username-input"
+          />
+
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">Bio</label>
+            <textarea
+              value={newProfile.bio}
+              onChange={(e) => setNewProfile({ ...newProfile, bio: e.target.value })}
+              placeholder="Say something intresting about you..."
+              data-testid="profile-bio-input"
+              required
+              className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[100px]"
+            />
+          </div>
+
+          <GradientButton type="submit" className="w-full" data-testid="submit-new-profile-btn">
+            Save Changes
+          </GradientButton>
+        </form>
+      </Modal>
+
     </div>
   );
 };

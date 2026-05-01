@@ -75,7 +75,7 @@ const HabitTracker = () => {
                   Habit Analytics
                 </h2>
                 <p className="text-gray-400 text-sm">
-                  Consistency builds your identity 🔥
+                  Consistency builds your identity
                 </p>
               </div>
 
@@ -101,7 +101,7 @@ const HabitTracker = () => {
         )}
 
         {/* Build Habits */}
-        <Card className="mb-6 bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_0_30px_rgba(34,197,94,0.2)]">
+        <Card className="mb-6 bg-transparent border border-white/10 shadow-[0_0_30px_rgba(34,197,94,0.2)]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <TrendingUp size={24} className="text-green-400" />
@@ -115,7 +115,7 @@ const HabitTracker = () => {
             </span>
           </div>
           {buildHabits.length > 0 ? (
-            <div className="space-y-3">
+            <div className="flex flex-col md:grid md:grid-cols-2 gap-3">
               {buildHabits.map((habit, index) => (
                 <motion.div
                   key={habit.id}
@@ -137,7 +137,7 @@ const HabitTracker = () => {
         </Card>
 
         {/* Break Habits */}
-        <Card className="mb-6 bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+        <Card className="mb-6 bg-transparent border border-white/10 shadow-[0_0_30px_rgba(34,197,94,0.2)]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <TrendingDown size={24} className="text-red-400" />
@@ -151,7 +151,7 @@ const HabitTracker = () => {
             </span>
           </div>
           {breakHabits.length > 0 ? (
-            <div className="space-y-3">
+            <div className="flex flex-col md:grid md:grid-cols-2 gap-3">
               {breakHabits.map(habit => (
                 <HabitCard
                   key={habit.id}

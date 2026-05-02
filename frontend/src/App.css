@@ -16,6 +16,15 @@
   }
 }
 
+.recharts-wrapper,
+.recharts-surface {
+  outline: none !important;
+}
+
+.recharts-wrapper * {
+  outline: none !important;
+}
+
 *{
     font-family: "Baloo 2", sans-serif;
     font-optical-sizing: auto;

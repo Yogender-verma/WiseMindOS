@@ -256,12 +256,11 @@ const Dashboard = () => {
               <DonutChart value={avgDiscipline} size={140} color="#10B981" label="This Week" />
             </div>
           </Card>
-        </div>
 
-        <Card className="bg-transparent border border-white/10 mb-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Weekly Trend</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            {/* <LineChart data={weeklyData}>
+          <Card className="bg-transparent border border-white/10">
+            <h3 className="text-lg font-semibold text-white mb-4">Weekly Trend</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              {/* <LineChart data={weeklyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="name" stroke="#9ca3af" style={{ fontSize: '12px' }} />
                 <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
@@ -276,24 +275,43 @@ const Dashboard = () => {
                 <Line type="monotone" dataKey="productivity" stroke="#6366f1" strokeWidth={2} />
                 <Line type="monotone" dataKey="discipline" stroke="#10b981" strokeWidth={2} />
               </LineChart> */}
-            <BarChart data={weeklyData} margin={{ top: 20, right: 0, left: -10, bottom: 0 }} barGap={15} >
-              {/* <CartesianGrid strokeDasharray="3 3" stroke="#374151" /> */}
+              <BarChart data={weeklyData} margin={{ top: 20, right: 0, left: -10, bottom: 0 }} barGap={8} >
+                <defs>
+                  {/* Purple Glow (Productivity) */}
+                  <filter id="purpleGlow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
 
-              <XAxis
-                dataKey="name"
-                stroke="#9ca3af"
-                style={{ fontSize: '12px' }}
-                axisLine={false}
-                tickLine={false}
-              />
+                  {/* Green Glow (Discipline) */}
+                  <filter id="greenGlow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                {/* <CartesianGrid strokeDasharray="3 3" stroke="#374151" /> */}
 
-              <YAxis
-                // stroke="#9ca3af"
-                // style={{ fontSize: '12px' }}
-                hide
-              />
+                <XAxis
+                  dataKey="name"
+                  stroke="#9ca3af"
+                  style={{ fontSize: '12px' }}
+                // axisLine={false}
+                // tickLine={false}
+                />
 
-              <Tooltip
+                <YAxis
+                  // stroke="#9ca3af"
+                  // style={{ fontSize: '12px' }}
+                  hide
+                />
+
+                {/* <Tooltip
                 cursor={{ fill: "transparent" }}
                 contentStyle={{
                   backgroundColor: '#1f2937',
@@ -301,44 +319,47 @@ const Dashboard = () => {
                   borderRadius: '8px',
                   // fontSize: '12px'
                 }}
-              />
+              /> */}
 
-              <Legend />
+                {/* <Legend /> */}
 
-              {/* Productivity Bar */}
-              {/* <Bar
+                {/* Productivity Bar */}
+                {/* <Bar
                 dataKey="productivity"
                 fill="#6366f1"
                 radius={[6, 6, 0, 0]}
               /> */}
 
-              {/* Discipline Bar */}
-              {/* <Bar
+                {/* Discipline Bar */}
+                {/* <Bar
                 dataKey="discipline"
                 fill="#10b981"
                 radius={[6, 6, 0, 0]}
               /> */}
 
-              <Bar
-                dataKey="productivity"
-                fill="#6366f1"
-                radius={[10, 10, 10, 10]}
-                barSize={8}
-              >
-                <LabelList dataKey="productivity" position="top" fill="#6366f1" style={{ fontSize: '12px' }}/>
-              </Bar>
+                <Bar
+                  dataKey="productivity"
+                  fill="#6366f1"
+                  radius={[10, 10, 10, 10]}
+                  barSize={8}
+                  filter="url(#purpleGlow)"
+                >
+                  <LabelList dataKey="productivity" position="top" fill="#6366f1" style={{ fontSize: '8px' }} />
+                </Bar>
 
-              <Bar
-                dataKey="discipline"
-                fill="#10b981"
-                radius={[10, 10, 10, 10]}
-                barSize={8}
-              >
-                <LabelList dataKey="discipline" position="top" fill="#10b981" style={{ fontSize: '12px' }}/>
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
+                <Bar
+                  dataKey="discipline"
+                  fill="#10b981"
+                  radius={[10, 10, 10, 10]}
+                  barSize={8}
+                  filter="url(#greenGlow)"
+                >
+                  <LabelList dataKey="discipline" position="top" fill="#10b981" style={{ fontSize: '8px' }} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </div>
 
 
         {(importantTasks.length > 0 || behindTasks.length > 0) && (

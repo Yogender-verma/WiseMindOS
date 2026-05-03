@@ -190,7 +190,7 @@ export const AppProvider = ({ children }) => {
       const response = await authAPI.update(updates);
 
       if (response.success) {
-        // ✅ Update user state globally
+        // Update user state globally
         setUser(prev => ({
           ...prev,
           ...response.user
@@ -224,13 +224,12 @@ export const AppProvider = ({ children }) => {
 
   const updateUserProfilePic = async (updates) => {
     try {
-      // if (loading) return;
       setLoading(true);
 
       const response = await authAPI.updateProfilePic(updates);
 
       if (response.success) {
-        // ✅ Update user state globally
+        // Update user state globally
         setUser(prev => ({
           ...prev,
           ...response.user

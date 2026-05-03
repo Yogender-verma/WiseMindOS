@@ -24,6 +24,7 @@ const Dashboard = () => {
 
   const [weeklyData, setWeeklyData] = useState([]);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showEditProfilePic, setShowEditProfilePic] = useState(false);
 
   const {
     goals,
@@ -33,6 +34,7 @@ const Dashboard = () => {
     habits,
     dailyPlan,
     updateUser,
+    updateUserProfilePic,
     calculateGoalProgress,
     calculateProjectProgress,
     toggleDailyPlanTaskCompletion,
@@ -44,6 +46,7 @@ const Dashboard = () => {
   } = useApp();
 
   const [newProfile, setNewProfile] = useState({ name: user.name, username: user.username, bio: user.bio, profile_picture: null });
+  const [newProfilePic, setNewProfilePic] = useState(null);
 
   const navigate = useNavigate();
 
@@ -170,6 +173,52 @@ const Dashboard = () => {
     }
   };
 
+
+  const handleEditProfilePic = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    let hasChanges = false;
+
+    // // TEXT fields
+    // if (newProfile.name !== "" && newProfile.name !== user.name) {
+    //   formData.append("name", newProfile.name);
+    //   hasChanges = true;
+    // }
+
+    // if (newProfile.username !== "" && newProfile.username !== user.username) {
+    //   formData.append("username", newProfile.username);
+    //   hasChanges = true;
+    // }
+
+    // if (newProfile.bio !== user.bio) {
+    //   formData.append("bio", newProfile.bio);
+    //   hasChanges = true;
+    // }
+
+    // 🔥 IMAGE FIELD (IMPORTANT)
+    if (newProfilePic) {
+      formData.append("profile", newProfilePic);
+      hasChanges = true;
+    }
+
+    // If nothing changed
+    if (!hasChanges) {
+      setShowEditProfile(false);
+      return;
+    }
+
+    // Call API
+    const success = await updateUserProfilePic(formData);
+
+    if (success) {
+      // Reset form with updated values
+      setNewProfilePic(null);
+
+      setShowEditProfilePic(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black pb-20 px-4 pt-6 relative overflow-hidden">
       <motion.div
@@ -199,7 +248,7 @@ const Dashboard = () => {
               {/* Image div  */}
               <div className='h-30 w-30 rounded-full relative group border-6 border-black/15 shadow-[0_0_40px_rgba(99,102,241,0.2)] shrink-0'>
                 <img src={user.profile_picture || profile_pic} className='w-full h-full object-cover rounded-full' alt="" />
-                <div onClick={()=>setShowEditProfile(true)} className='w-full h-full bg-black/50 absolute rounded-full inset-0 cursor-pointer opacity-0 z-10 group-hover:opacity-100'>
+                <div onClick={()=>setShowEditProfilePic(true)} className='w-full h-full bg-black/50 absolute rounded-full inset-0 cursor-pointer opacity-0 z-10 group-hover:opacity-100'>
                   <div className='h-full w-full flex items-center justify-center'>
                     <Camera size={18} className='text-white' />
                   </div>
@@ -681,7 +730,7 @@ const Dashboard = () => {
       <Modal isOpen={showEditProfile} onClose={() => setShowEditProfile(false)} title="Edit Profile Info">
         <form onSubmit={handleEditProfile} className="space-y-4">
           {/* Profile Picture */}
-          <div className='flex flex-col items-start gap-3'>
+          {/* <div className='flex flex-col items-start gap-3'>
             <label htmlFor="profile_picture" className='block text-gray-300 text-sm font-medium mb-2'>
               Profile Picture
               <input hidden type="file" accept='image/*' id='profile_picture' className='w-full p-3 border border-gray-200 rounded-lg' onChange={(e) => setNewProfile({ ...newProfile, profile_picture: e.target.files[0] })} />
@@ -693,7 +742,7 @@ const Dashboard = () => {
                 </div>
               </div>
             </label>
-          </div>
+          </div> */}
           <InputField
             label="Name (Full Name)"
             value={newProfile.name}
@@ -725,6 +774,29 @@ const Dashboard = () => {
 
           <GradientButton type="submit" className="w-full" data-testid="submit-new-profile-btn">
             Save Changes
+          </GradientButton>
+        </form>
+      </Modal>
+
+      <Modal isOpen={showEditProfilePic} onClose={() => setShowEditProfilePic(false)} title="Change Profile Picture">
+        <form onSubmit={handleEditProfilePic} className="space-y-4">
+          {/* Profile Picture */}
+          <div className='flex flex-col gap-3 items-center'>
+            <label htmlFor="profile_picture" className='block text-gray-300 text-sm font-medium mb-2'>
+              Click to upload
+              <input hidden type="file" accept='image/*' id='profile_picture' className='w-full p-3 border border-gray-200 rounded-lg' onChange={(e) => setNewProfilePic(e.target.files[0])} />
+
+              <div className='group/profile relative'>
+                <img src={newProfilePic ? URL.createObjectURL(newProfilePic) : user.profile_picture || profile_pic} alt="" className='w-24 h-24 rounded-full object-cover mt-2' />
+                <div className='absolute hidden cursor-pointer group-hover/profile:flex top-0 left-0 right-0 bottom-0 bg-black/20 rounded-full items-center justify-center'>
+                  <Pencil className='w-5 h-5 text-white' />
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <GradientButton type="submit" className="w-full" data-testid="submit-new-profile-picture-btn">
+            Upload
           </GradientButton>
         </form>
       </Modal>

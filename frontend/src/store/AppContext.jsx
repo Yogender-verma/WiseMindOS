@@ -185,17 +185,60 @@ export const AppProvider = ({ children }) => {
 
   const updateUser = async (updates) => {
     try {
-      if(loading) return;
+      // if (loading) return;
       setLoading(true);
 
       const response = await authAPI.update(updates);
 
       if (response.success) {
         // ✅ Update user state globally
-        setUser(response.user);
+        setUser(prev => ({
+          ...prev,
+          ...response.user
+        }));
 
         showToast({
           message: response.message || 'Profile updated successfully',
+          status: 'success'
+        });
+
+        return true;
+      } else {
+        showToast({
+          message: response.message || 'Failed to update profile',
+          status: 'error'
+        });
+        return false;
+      }
+
+    } catch (error) {
+      console.error('Error updating user:', error);
+      showToast({
+        message: error.message || 'Failed to update profile',
+        status: 'error'
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateUserProfilePic = async (updates) => {
+    try {
+      // if (loading) return;
+      setLoading(true);
+
+      const response = await authAPI.updateProfilePic(updates);
+
+      if (response.success) {
+        // ✅ Update user state globally
+        setUser(prev => ({
+          ...prev,
+          ...response.user
+        }));
+
+        showToast({
+          message: response.message || 'Profile Pic updated successfully',
           status: 'success'
         });
 
@@ -952,6 +995,7 @@ export const AppProvider = ({ children }) => {
     dailyPlan,
     scores,
     updateUser,
+    updateUserProfilePic,
     addGoal,
     addProject,
     addTask,

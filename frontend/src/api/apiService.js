@@ -13,6 +13,10 @@ export const authAPI = {
     update: async (data) => {
         const response = await axiosInstance.post('/api/user/update', data);
         return response.data;
+    },
+    updateProfilePic: async (data) => {
+        const response = await axiosInstance.post('/api/user/update-profile-pic', data);
+        return response.data;
     }
 };
 

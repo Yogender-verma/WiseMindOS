@@ -3,6 +3,7 @@ import imagekit from "../config/imagekit.js"
 import validator from 'validator'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import fs from 'fs'
 
 
 

@@ -17,17 +17,34 @@ const Login = () => {
   });
   const [error, setError] = useState('');
 
+  const getAuthErrorMessage = (error, fallback) => {
+    return error?.response?.data?.message || error?.message || fallback;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!formData.identifier || !formData.password) {
-      setError('Please fill in all fields');
+    const identifier = formData.identifier.trim();
+    const password = formData.password.trim();
+
+    if (!identifier && !password) {
+      setError('Enter your email or username and password to continue.');
       return;
     }
-    
+
+    if (!identifier) {
+      setError('Enter your email or username.');
+      return;
+    }
+
+    if (!password) {
+      setError('Enter your password.');
+      return;
+    }
+
     try {
-      const response = await authAPI.login(formData);
+      const response = await authAPI.login({ identifier, password });
 
       if (response.success) {
         // Store token
@@ -55,8 +72,9 @@ const Login = () => {
     } catch (error) {
 
       console.error('Login error:', error);
-      setError('An error occurred. Please try again.');
-      showToast({ message: error.message || 'Error Occured', status: "error" })
+      const message = getAuthErrorMessage(error, 'Unable to log in. Please check your details and try again.');
+      setError(message);
+      showToast({ message, status: "error" })
     }
   };
 

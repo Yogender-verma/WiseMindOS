@@ -20,28 +20,47 @@ const Signup = () => {
   });
   const [error, setError] = useState('');
 
+  const passwordRules = [
+    { label: 'At least 8 characters', isValid: formData.password.length >= 8 },
+    { label: 'One uppercase letter', isValid: /[A-Z]/.test(formData.password) },
+    { label: 'One lowercase letter', isValid: /[a-z]/.test(formData.password) },
+    { label: 'One number', isValid: /\d/.test(formData.password) },
+  ];
+
+  const getAuthErrorMessage = (error, fallback) => {
+    return error?.response?.data?.message || error?.message || fallback;
+  };
+
   const handleSignUpSubmit = async(e) => {
     e.preventDefault();
     setError('');
 
-    if (!formData.name || !formData.email || !formData.password || !formData.username) {
-      setError('Please fill in all fields');
+    const payload = {
+      name: formData.name.trim(),
+      username: formData.username.trim(),
+      email: formData.email.trim().toLowerCase(),
+      password: formData.password,
+    };
+
+    if (!payload.name || !payload.email || !payload.password || !payload.username) {
+      setError('Please complete all required fields before creating your account.');
       return;
     }
 
-    if (!validateEmail(formData.email)) {
-      setError('Please enter a valid email');
+    if (!validateEmail(payload.email)) {
+      setError('Please enter a valid email address.');
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+    const missingPasswordRule = passwordRules.find((rule) => !rule.isValid);
+    if (missingPasswordRule) {
+      setError(`Password must include: ${missingPasswordRule.label.toLowerCase()}.`);
       return;
     }
 
     try {
 
-      const response = await authAPI.register(formData);
+      const response = await authAPI.register(payload);
       
       if(response.success){
         // Store token
@@ -50,9 +69,9 @@ const Signup = () => {
         
         // Save user data
         const userData = response.user || { 
-          name: formData.name,
-          username: formData.username, 
-          email: formData.email,
+          name: payload.name,
+          username: payload.username,
+          email: payload.email,
           bio: response.bio,
         };
         setUser(userData);
@@ -66,8 +85,9 @@ const Signup = () => {
       
     } catch (error) {
         console.error('Signup error:', error);
-        setError('An error occurred. Please try again.');
-        showToast({ message: error.message || 'Error Occured. Please try again.', status: 'error' })
+        const message = getAuthErrorMessage(error, 'Unable to create your account. Please try again.');
+        setError(message);
+        showToast({ message, status: 'error' })
     }
   };
 
@@ -158,12 +178,16 @@ shadow-[0_0_40px_rgba(99,102,241,0.2)]'>
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="Create a password (min 6 characters)"
+                placeholder="Create a strong password"
                 required
               />
-              <p className="text-sm text-gray-500">
-                Must be at least 6 characters
-              </p>
+              <div className="space-y-1 text-sm">
+                {passwordRules.map((rule) => (
+                  <p key={rule.label} className={rule.isValid ? 'text-green-400' : 'text-gray-500'}>
+                    {rule.isValid ? '✓' : '•'} {rule.label}
+                  </p>
+                ))}
+              </div>
 
               <GradientButton type="submit" className="w-full mt-5" data-testid="signup-continue-btn">
                 Create Account

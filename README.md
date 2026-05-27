@@ -212,6 +212,12 @@ VITE_API_BASE_URL=http://localhost:5000/api
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
 ```
 
+or 
+
+```bash
+cp .env.example .env
+```
+
 ## Run Frontend
 
 ```bash
@@ -245,6 +251,15 @@ JWT_SECRET=your_secret_key
 CLIENT_URL=http://localhost:5173
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
+IMAGEKIT_PUBLIC_KEY=placeholder_public_key
+IMAGEKIT_PRIVATE_KEY=placeholder_private_key
+IMAGEKIT_URL_ENDPOINT=placeholder_url_endpoint
+```
+
+or
+
+```bash
+cp .env.example .env
 ```
 
 ## Run Backend

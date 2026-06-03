@@ -23,12 +23,15 @@ import Library from './modules/library_room/Library';
 
 import { useApp } from './store/AppContext';
 import { ToastContainer } from 'react-toastify';
+import ErrorBoundary from './components/ErrorBoundary';
+import ErrorPage from './pages/ErrorPage';
 
   function App() {
     const { token } = useApp();
     return (
       <>
         <ToastContainer position="top-right" autoClose={3000} />
+        <ErrorBoundary fallback={<ErrorPage />}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={token ? <Navigate to="/dashboard" replace /> : <Landing />} />
@@ -57,6 +60,7 @@ import { ToastContainer } from 'react-toastify';
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </ErrorBoundary>
       </>
     );
   }

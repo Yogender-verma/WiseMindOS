@@ -215,33 +215,59 @@ Then immediately follow it with:
 
 
 
-## Quick Start
+# Quick Start
 
-Follow these steps to run WiseMindOS on your local machine.
+## Prerequisites
 
-### 1. Clone the Repository
+Ensure the following are installed:
 
-Open a terminal and run:
+* Git
+* Node.js
+* MongoDB
+
+---
+
+## 1. Clone the Repository
 
 ```bash
 git clone https://github.com/aaryan498/WiseMindOS.git
 cd WiseMindOS
 ```
 
-### 2. Create Backend Environment Variables
+---
 
-Navigate to the backend folder and create a `.env` file:
+## 2. Start MongoDB
+
+Before configuring the application, make sure MongoDB is running.
+
+Verify it is accessible using MongoDB Compass or by connecting through the MongoDB shell.
+
+---
+
+# Backend Setup
+
+## 3. Navigate to the Backend Folder
 
 ```bash
 cd backend
 ```
 
-Add the following:
+## 4. Configure Backend Environment Variables
 
-```env 
+Create a `.env` file.
+
+Either copy the example file:
+
+```bash
+cp .env.example .env
+```
+
+Or create it manually:
+
+```env
 PORT=4000
 MONGODB_URI=your_mongodb_connection_string
-DB_NAME="wise-mind-os"
+DB_NAME=wise-mind-os
 JWT_SECRET=replace_with_a_secure_random_string
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
@@ -250,71 +276,93 @@ IMAGEKIT_PRIVATE_KEY=placeholder_private_key
 IMAGEKIT_URL_ENDPOINT=placeholder_url_endpoint
 ```
 
-or
+## 5. Install Backend Dependencies
 
 ```bash
-cp .env.example .env
+npm install
 ```
 
-### 3. Create Frontend Environment Variables
-
-Navigate to the frontend folder and create a `.env` file:
+## 6. Start the Backend Server
 
 ```bash
-cd ../frontend
+npm start
 ```
 
-Add the following:
+The backend should now be running on:
+
+```text
+http://localhost:4000
+```
+
+Keep this terminal open.
+
+---
+
+# Frontend Setup
+
+Open a new terminal window.
+
+## 7. Navigate to the Frontend Folder
+
+From the project root:
+
+```bash
+cd WiseMindOS/frontend
+```
+
+## 8. Configure Frontend Environment Variables
+
+Create a `.env` file:
 
 ```env
 VITE_BACKEND_URL=http://localhost:4000
-VITE_GOOGLE_CLIENT_ID:your_google_client_id
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
 ```
 
-### 4. Install Backend Dependencies
-
-Open a terminal in the `backend` folder and run:
+## 9. Install Frontend Dependencies
 
 ```bash
 npm install
 ```
 
-### 5. Install Frontend Dependencies
-
-Open a terminal in the `frontend` folder and run:
+## 10. Start the Frontend Server
 
 ```bash
-npm install
-```
-
-### 6. Start the Backend Server
-
-Open **Terminal 1**:
-
-```bash
-cd WiseMindOS/backend
 npm run dev
 ```
 
-Wait until the backend starts successfully.
+Keep this terminal open.
 
-### 7. Start the Frontend Server
+---
 
-Open **Terminal 2**:
+## 11. Open the Application
+
+Open the URL displayed in the frontend terminal.
+
+Typically:
+
+```text
+http://localhost:5173
+```
+
+---
+
+## Running the Application
+
+Whenever you want to run the project:
+
+### Terminal 1
+
+```bash
+cd WiseMindOS/backend
+npm start
+```
+
+### Terminal 2
 
 ```bash
 cd WiseMindOS/frontend
 npm run dev
-```
-
-### 8. Open the Application
-
-Once both servers are running, open the **Local** URL displayed in Terminal 2.
-
-By default, it is usually:
-
-```text
-http://localhost:5173
 ```
 
 

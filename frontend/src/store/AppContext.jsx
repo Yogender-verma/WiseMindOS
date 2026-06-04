@@ -66,11 +66,6 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [dailyTasks, setDailyTasks] = useState(() => {
-    const saved = localStorage.getItem('wisemind_daily_tasks');
-    return saved ? JSON.parse(saved) : [];
-  });
-
   // NEW: Daily Plan with date-specific structure
   const [dailyPlan, setDailyPlan] = useState(() => {
     const saved = localStorage.getItem('wisemind_daily_plan');
@@ -404,11 +399,6 @@ export const AppProvider = ({ children }) => {
           showToast({ message: response.message || 'Failed to update task', status: 'error' })
         }
       }
-
-      // Legacy: Update old dailyTasks for compatibility 
-      setDailyTasks(dailyTasks.map(task =>
-        task.id === taskId ? { ...task, completed: !task.completed } : task
-      ));
     } catch (error) {
       console.error('Error toggling task:', error);
       showToast({ message: error.message || 'Failed to update task', status: 'error' })
@@ -438,14 +428,12 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // const deleteTask = (taskId) => {
   // Delete Task - Backend Integration
   const deleteTask = async (taskId) => {
     try {
       const response = await taskAPI.delete(taskId);
       if (response.success) {
         setTasks(tasks.filter(task => task.id !== taskId));
-        setDailyTasks(dailyTasks.filter(task => task.id !== taskId));
         showToast({ message: response.message || 'Task deleted successfully', status: 'success' })
       } else {
         showToast({ message: response.message || 'Failed to delete task', status: 'error' })
@@ -657,16 +645,6 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // const updatePage = async (pageId, content) => {
-  //   const res = await pageAPI.update({ pageId, content });
-  //   if (res.success) {
-  //     setPages(prev =>
-  //       prev.map(p => p.id === pageId ? { ...p, content } : p)
-  //     );
-  //   }
-  // };
-
-
   const updateTimeout = useRef(null);
   const updatePage = (pageId, content) => {
     setPages(prev =>
@@ -763,10 +741,6 @@ export const AppProvider = ({ children }) => {
     });
 
     return Math.round((onTimeCompleted / tasks.length) * 100);
-  };
-
-  const setDailyTasksList = (tasksList) => {
-    setDailyTasks(tasksList);
   };
 
   // Add task to daily plan - Backend Integration
@@ -949,7 +923,6 @@ export const AppProvider = ({ children }) => {
     setProjects([]);
     setTasks([]);
     setHabits([]);
-    setDailyTasks([]);
     setDailyPlan({ date: new Date().toISOString().split('T')[0], plannedTasks: [] });
     setScores({ productivity: 0, discipline: 0 });
     setUser(null);
@@ -990,7 +963,6 @@ export const AppProvider = ({ children }) => {
     projects,
     tasks,
     habits,
-    dailyTasks,
     dailyPlan,
     scores,
     updateUser,
@@ -1019,7 +991,6 @@ export const AppProvider = ({ children }) => {
     updatePage,
     deletePage,
     updateScores,
-    setDailyTasksList,
     addToDailyPlan,
     removeFromDailyPlan,
     createManualDailyTask,

@@ -5,6 +5,7 @@ import Card from '../../../components/Card';
 import DonutChart from '../../../components/DonutChart';
 import GradientButton from '../../../components/GradientButton';
 import InputField from '../../../components/InputField';
+import EmptyState from '../../../components/EmptyState';
 import { format } from 'date-fns';
 import { motion as Motion } from 'framer-motion';
 import Modal from '../../../components/Modal';
@@ -286,14 +287,15 @@ const DailyTaskTracker = () => {
               transition={{ duration: 0.3 }}
             >
               {isPlanEmpty ? (
-                <Card className="text-center py-12 backdrop-blur-lg bg-white/5 border border-white/10 shadow-[0_0_30px_rgba(99,102,241,0.15)]">
-                  <CalendarSyncIcon size={48} className="mx-auto text-indigo-400 mb-4" />
-                  <h3 className="text-xl font-bold text-white mb-2">Your day is wide open!</h3>
-                  <p className="text-gray-400 mb-4">Start planning by adding tasks, habits, or creating manual tasks</p>
-                  <GradientButton onClick={() => setActiveTab('add')} data-testid="start-planning-btn">
-                    Start Planning
-                  </GradientButton>
-                </Card>
+                <EmptyState
+                  icon={CalendarSyncIcon}
+                  title="Your day is wide open"
+                  description="Add tasks, habits, or a manual focus block to build a clear timeline."
+                  actionLabel="Start Planning"
+                  onAction={() => setActiveTab('add')}
+                  testId="start-planning-btn"
+                  className="shadow-[0_0_30px_rgba(99,102,241,0.15)]"
+                />
               ) : (
                 <>
                   {/* Progress Summary */}
@@ -699,10 +701,12 @@ const DailyTaskTracker = () => {
                       </div>
                     </>
                   ) : (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400">No available tasks to add</p>
-                      <p className="text-sm text-gray-500 mt-1">All tasks are either completed or already in your plan</p>
-                    </div>
+                    <EmptyState
+                      icon={CheckSquare}
+                      title="No available tasks"
+                      description="All tasks are completed or already placed in today's plan."
+                      className="border-0 bg-transparent shadow-none"
+                    />
                   )}
                 </Card>
               )}
@@ -741,10 +745,12 @@ const DailyTaskTracker = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400">No habits available</p>
-                      <p className="text-sm text-gray-500 mt-1">Habits without time or already in plan are hidden</p>
-                    </div>
+                    <EmptyState
+                      icon={CalendarClock}
+                      title="No habits available"
+                      description="Habits without a time or already in the plan are hidden from suggestions."
+                      className="border-0 bg-transparent shadow-none"
+                    />
                   )}
                 </Card>
               )}

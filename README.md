@@ -285,7 +285,7 @@ npm install
 ## 6. Start the Backend Server
 
 ```bash
-npm start
+npm run server
 ```
 
 The backend should now be running on:
@@ -355,7 +355,7 @@ Whenever you want to run the project:
 
 ```bash
 cd WiseMindOS/backend
-npm start
+npm run server
 ```
 
 ### Terminal 2

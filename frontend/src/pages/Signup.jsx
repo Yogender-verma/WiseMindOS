@@ -196,6 +196,7 @@ shadow-[0_0_40px_rgba(99,102,241,0.2)]'>
               </div>
 
               <GradientButton
+                aria-busy={isLoading}
                 type="submit"
                 className="w-full mt-5"
                 disabled={isLoading}

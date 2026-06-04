@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from 'recharts';
-import { TrendingUp, Target, CheckCircle, Zap, ArrowRight, UserPlus2, Camera, CalendarDays, Star, AlertTriangle, UserPen, LucideTrophy, Pencil, Activity, Flame, BarChart3 } from 'lucide-react';
+import { TrendingUp, Target, CheckCircle, Zap, ArrowRight, UserPlus2, Camera, CalendarDays, Star, AlertTriangle, UserPen, LucideTrophy, Pencil, Activity, Flame, BarChart3, Timer } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 import Card from '../components/Card';
 import StatCard from '../components/StatCard';
@@ -314,25 +314,41 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className='text-gray-400 mb-6'>{user.bio || 'Add Bio'}</div>
+                <div className='flex flex-col items-center md:items-start flex-1 w-full'>
+                  <span className='text-3xl md:text-4xl default-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400'>{user.name || 'User'}</span>
+                  <span className='cursor-pointer text-sm font-medium text-indigo-400/80 mb-3'>@{user.username || 'username'}</span>
+                  <p className='text-gray-300 text-sm md:text-base text-center md:text-left mb-6 max-w-lg leading-relaxed'>{user.bio || 'Add Bio'}</p>
 
-            <div className='flex flex-wrap justify-around gap-4 mb-4'>
-              <div className="text-center">
-                <p className="text-lg font-bold text-indigo-400">{productivityScore}%</p>
-                <p className="text-xs text-gray-400">Productivity</p>
-              </div>
+                  <div className='flex flex-wrap justify-center md:justify-start gap-6 w-full'>
+                    <div className="flex flex-col">
+                      <p className="text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">{productivityScore}%</p>
+                      <p className="text-xs text-indigo-300 uppercase tracking-wider font-semibold">Productivity</p>
+                    </div>
+                    <div className="w-px h-10 bg-white/10 hidden md:block"></div>
+                    <div className="flex flex-col">
+                      <p className="text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">{disciplineScore}%</p>
+                      <p className="text-xs text-emerald-300 uppercase tracking-wider font-semibold">Discipline</p>
+                    </div>
+                    <div className="w-px h-10 bg-white/10 hidden md:block"></div>
+                    <div className="flex flex-col">
+                      <div className="flex items-end gap-1 h-8">
+                        {productivityInsights?.heatmap?.slice(-7)?.map((d, i) => (
+                           <div key={i} className="w-1.5 bg-indigo-500 rounded-t-sm opacity-80" style={{ height: `${Math.max(15, d.value)}%` }}></div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mt-1">7D Activity</p>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="text-center">
-                <p className="text-lg font-bold text-green-400">{disciplineScore}%</p>
-                <p className="text-xs text-gray-400">Discipline</p>
+                <div className="w-full md:w-auto mt-6 md:mt-0 flex items-center justify-center">
+                  <GradientButton className="w-full md:w-40 py-3 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_35px_rgba(99,102,241,0.6)] hover:scale-[1.05] transform-gpu transition-all duration-300 ease-in-out border border-indigo-400/20">
+                    <UserPlus2 size={20} />
+                    <span>Connect</span>
+                  </GradientButton>
+                </div>
               </div>
             </div>
-
-            <GradientButton className="w-full h-full flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(99,102,241,0.5)]">
-              <UserPlus2 size={20} />
-              <span>Connect</span>
-            </GradientButton>
-
           </Card>
 
         </Motion.div>
@@ -349,13 +365,13 @@ const Dashboard = () => {
           {loading ? (
             <DashboardStatsSkeleton />
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
 
               <StatCard
                 title="Productivity"
                 value={`${productivityScore}%`}
                 icon={<Zap size={24} />}
-                // trend={{positive: false, value: 20}}
+                trend={{positive: productivityInsights.trendDelta >= 0, value: Math.abs(productivityInsights.trendDelta)}}
                 data-testid="productivity-score-card"
               />
               <StatCard
@@ -365,6 +381,19 @@ const Dashboard = () => {
                 data-testid="discipline-score-card"
               />
               <StatCard
+                title="Focus Hours"
+                value="12.5h"
+                icon={<Timer size={24} />}
+                trend={{positive: true, value: 15}}
+                data-testid="focus-hours-card"
+              />
+              <StatCard
+                title="Habit Streak"
+                value="14 Days"
+                icon={<Flame size={24} />}
+                data-testid="habit-streak-card"
+              />
+              <StatCard
                 title="Active Goals"
                 value={goals.length.toString()}
                 icon={<Target size={24} />}
@@ -372,7 +401,7 @@ const Dashboard = () => {
               />
               <StatCard
                 title="Tasks Today"
-                value={`${dailyPlan?.plannedTasks.filter(t => t.completed).length}/${dailyPlan?.plannedTasks.length}`}
+                value={`${dailyPlan?.plannedTasks.filter(t => t.completed).length}/${dailyPlan?.plannedTasks.length || 0}`}
                 icon={<CheckCircle size={24} />}
                 data-testid="tasks-today-card"
               />
@@ -744,31 +773,40 @@ const Dashboard = () => {
             </div>
           </Card>
         ) : hasPlannedTasks && pendingPlannedTasks.length == 0 ? (
-          <Card className="mb-6 bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_0_30px_rgba(99,102,241,0.15)]">
-            <div className="text-center py-8">
-              <LucideTrophy size={48} className="text-indigo-400 mx-auto mb-3 drop-shadow-[0_0_10px_rgba(99,102,241,0.6)]" />
-              <h3 className="text-xl font-bold text-white mb-2">"Hooray !!"</h3>
-              <h3 className="text-xl font-bold text-white mb-2">All tasks for today is completed.</h3>
-              <p className="text-gray-400 mb-4">
-                Plan Ahead, Keep pushing yourself...
-              </p>
-              <Link to="/trackers/daily-tasks">
-                <GradientButton data-testid="plan-now-btn">
+          <Card className="mb-6 relative overflow-hidden bg-gradient-to-br from-emerald-900/20 to-teal-900/10 backdrop-blur-3xl border border-emerald-500/20 shadow-[0_0_40px_rgba(16,185,129,0.1)] group">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-4 md:p-2 gap-6">
+              <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 w-full">
+                <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)] group-hover:scale-105 transition-transform duration-300 shrink-0">
+                  <LucideTrophy size={32} className="text-emerald-400" />
+                </div>
+                <div className="text-center md:text-left">
+                  <h3 className="text-xl font-bold text-white mb-1 drop-shadow-md">Hooray! All tasks completed.</h3>
+                  <p className="text-gray-400 text-sm">Plan Ahead, Keep pushing yourself or take a break.</p>
+                </div>
+              </div>
+              <Link to="/trackers/daily-tasks" className="w-full md:w-auto shrink-0">
+                <GradientButton className="w-full md:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 px-8" data-testid="plan-now-btn">
                   Plan Ahead
                 </GradientButton>
               </Link>
             </div>
           </Card>
         ) : !hasPlannedTasks && (
-          <Card className="mb-6 bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_0_30px_rgba(99,102,241,0.15)]">
-            <div className="text-center py-8">
-              <CalendarDays size={48} className="text-indigo-400 mx-auto mb-3 drop-shadow-[0_0_10px_rgba(99,102,241,0.6)]" />
-              <h3 className="text-xl font-bold text-white mb-2">Plan Your Day to Stay Productive</h3>
-              <p className="text-gray-400 mb-4">
-                Create a structured daily plan to maximize your productivity
-              </p>
-              <Link to="/trackers/daily-tasks">
-                <GradientButton data-testid="plan-now-btn">
+          <Card className="mb-6 relative overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/10 backdrop-blur-3xl border border-indigo-500/20 shadow-[0_0_40px_rgba(99,102,241,0.1)] group">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-4 md:p-2 gap-6">
+              <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 w-full">
+                <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.2)] group-hover:scale-105 transition-transform duration-300 shrink-0">
+                  <CalendarDays size={32} className="text-indigo-400" />
+                </div>
+                <div className="text-center md:text-left">
+                  <h3 className="text-xl font-bold text-white mb-1 drop-shadow-md">Plan Your Day to Stay Productive</h3>
+                  <p className="text-gray-400 text-sm">Create a structured daily plan to maximize your productivity</p>
+                </div>
+              </div>
+              <Link to="/trackers/daily-tasks" className="w-full md:w-auto shrink-0">
+                <GradientButton className="w-full md:w-auto px-8" data-testid="plan-now-btn">
                   Plan Now
                 </GradientButton>
               </Link>
@@ -873,12 +911,20 @@ const Dashboard = () => {
         )}
 
         {/* FutureTwin CTA */}
-        <Card className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_0_30px_rgba(99,102,241,0.2)]">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-white mb-2">Doubt on Self ? Ask Your Twin...</h2>
-            <p className="text-gray-300 mb-4">Use FutureTwin to predict outcomes and optimize your decisions.</p>
-            <Link to="/future-twin">
-              <GradientButton data-testid="future-twin-cta">
+        <Card className="mb-6 relative overflow-hidden bg-gradient-to-br from-fuchsia-900/20 to-purple-900/10 backdrop-blur-3xl border border-fuchsia-500/20 shadow-[0_0_40px_rgba(192,38,211,0.1)] group">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-fuchsia-500/10 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-4 md:p-2 gap-6">
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 w-full">
+              <div className="p-4 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/20 shadow-[0_0_15px_rgba(192,38,211,0.2)] group-hover:scale-105 transition-transform duration-300 shrink-0">
+                <Star size={32} className="text-fuchsia-400" />
+              </div>
+              <div className="text-center md:text-left">
+                <h2 className="text-xl font-bold text-white mb-1 drop-shadow-md">Doubt on Self ? Ask Your Twin...</h2>
+                <p className="text-gray-400 text-sm">Use FutureTwin to predict outcomes and optimize your decisions.</p>
+              </div>
+            </div>
+            <Link to="/future-twin" className="w-full md:w-auto shrink-0">
+              <GradientButton className="w-full md:w-auto bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500" data-testid="future-twin-cta">
                 Question your FutureTwin
               </GradientButton>
             </Link>

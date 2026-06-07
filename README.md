@@ -38,6 +38,7 @@ Transform long-term goals into structured daily execution through interconnected
 - [Repository Structure](#repository-structure)
 - [License](#license)
 - [Maintainer](#maintainer)
+- [Contributors 🤝](#contributors-)
 
 ---
 
